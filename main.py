@@ -241,7 +241,7 @@ def query(request: QueryRequest):
             "answer": None,
             "sources": [],
             "scores": [],
-            "confidence": 0.2
+            "confidence": 0.0
         }
 
     answer = " ".join(answer_sentences[:3])
