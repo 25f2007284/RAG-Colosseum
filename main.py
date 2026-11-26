@@ -43,7 +43,7 @@ def extract_passages(data):
     for index, item in enumerate(items):
         if isinstance(item, str):
             text = item
-            source_id = index
+            source_id = index + 1
         elif isinstance(item, dict):
             text = (
                 item.get("text")
@@ -183,14 +183,31 @@ def query(request: QueryRequest):
 
     ranked.sort(reverse=True)
 
-    if not ranked or ranked[0][0] < 0.10:
+    if not ranked or ranked[0][0] < 0.15:
         return {
             "answer": None,
             "sources": [],
             "scores": [],
-            "confidence": 0.2
+            "confidence": 0.0
         }
 
+    best_score, best_index = ranked[0]
+
+    question_terms = set(question_tokens)
+    passage_terms = set(passage_tokens[best_index])
+
+    matched_terms = question_terms.intersection(passage_terms)
+
+    coverage = len(matched_terms) / max(len(question_terms), 1)
+
+    if coverage < 0.20:
+        return {
+            "answer": None,
+            "sources": [],
+            "scores": [],
+            "confidence": 0.0
+        }
+    
     selected = ranked[:request.top_k]
 
     # Keep only passages with meaningful query overlap
